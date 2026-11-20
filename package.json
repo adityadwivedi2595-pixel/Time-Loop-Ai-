@@ -1,0 +1,47 @@
+{
+  "name": "timeloop-ai",
+  "version": "1.0.0",
+  "description": "TIMELOOP AI – Entertainment Edition: NVIDIA NIM + MCP + Generative AI + Interactive Story Engine",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "mcp:server": "tsx src/lib/mcp/runner.ts",
+    "seed": "tsx supabase/seed.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "@supabase/ssr": "^0.5.1",
+    "@supabase/supabase-js": "^2.46.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.11.11",
+    "html-to-image": "^1.11.11",
+    "lucide-react": "^0.454.0",
+    "next": "^14.2.15",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.5.4",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.2",
+    "@testing-library/jest-dom": "^6.6.2",
+    "@testing-library/react": "^16.0.1",
+    "@types/node": "^22.8.7",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "autoprefixer": "^10.4.20",
+    "dotenv": "^16.4.5",
+    "jsdom": "^25.0.1",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}
