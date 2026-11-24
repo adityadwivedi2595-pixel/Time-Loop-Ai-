@@ -404,6 +404,25 @@ export class DataStore {
     return memoryStore.scenes.get(sceneId) || null;
   }
 
+  public static async getLatestSceneByStory(storyId: string): Promise<StoryScene | null> {
+    if (this.hasLiveSupabase()) {
+      const supabase = createServerClient();
+      if (supabase) {
+        const { data, error } = await supabase
+          .from('story_scenes')
+          .select('*, choices:story_choices(*)')
+          .eq('story_id', storyId)
+          .order('scene_number', { ascending: false })
+          .limit(1)
+          .single();
+        if (!error && data) return data as StoryScene;
+      }
+    }
+    const scenes = Array.from(memoryStore.scenes.values()).filter((s) => s.story_id === storyId);
+    if (scenes.length === 0) return null;
+    return scenes[scenes.length - 1];
+  }
+
   public static async saveScene(scene: StoryScene): Promise<StoryScene> {
     if (this.hasLiveSupabase()) {
       const supabase = createServerClient();

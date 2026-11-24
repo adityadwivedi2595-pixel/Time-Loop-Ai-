@@ -8,6 +8,7 @@ import { StoryTimelineState } from '@/types/timeline';
 import { Badge } from '@/components/ui/Badge';
 import Link from 'next/link';
 import { GitBranch, Film, Library, ArrowLeft, RefreshCw } from 'lucide-react';
+import { getEraCoverImage } from '@/lib/ai/image-provider';
 
 export default function StoryPlayerPage() {
   const params = useParams();
@@ -19,6 +20,7 @@ export default function StoryPlayerPage() {
   const [timelineState, setTimelineState] = useState<StoryTimelineState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessingChoice, setIsProcessingChoice] = useState(false);
+  const [lastAutoSaveTime, setLastAutoSaveTime] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadStoryData() {
@@ -29,48 +31,96 @@ export default function StoryPlayerPage() {
         setStory(json.story);
 
         // Load timeline & current scene
-        const progRes = await fetch(`/api/stories/${storyId}/progress`);
-        if (progRes.ok) {
-          const progJson = await progRes.json();
-          setTimelineState(progJson.timelineState);
+        let loadedTimeline: StoryTimelineState | null = null;
+        let loadedScene: StoryScene | null = null;
+        try {
+          const progRes = await fetch(`/api/stories/${storyId}/progress`);
+          if (progRes.ok) {
+            const progJson = await progRes.json();
+            if (progJson.timelineState) {
+              loadedTimeline = progJson.timelineState;
+            }
+            if (progJson.currentScene) {
+              loadedScene = progJson.currentScene;
+            }
+          }
+        } catch {
+          // Fallback if network or error
         }
 
-        // Fetch scene: if not directly returned, load default scene 1
-        const defaultScene: StoryScene = {
-          id: `scene-initial-${storyId}`,
-          story_id: storyId,
-          chapter_id: 'chap-1',
-          scene_number: 1,
-          title: json.story.title || 'Echoes by the Sacred River',
-          narration: json.story.story_summary || 'Incense and river mist cling to the morning air. Beyond the bamboo grove, the timber bastions rise against the vermillion dawn. A convoy of royal guards halts as an ethereal humming sound reverberates from a sunken shrine.',
-          dialogues: [
-            { character: 'Royal Guard Commander', text: 'Hold your spears! That light is no earthly flame. Who approaches from the mist?' },
-            { character: 'Protagonist', text: 'I am a seeker of forgotten stars. I come in peace, but that brass artifact is unstable.' },
-          ],
-          scene_description: 'An ancient riverside temple terrace lit by flickering torchlight and a strange cyan tachyon glow escaping from a submerged bronze mechanism.',
-          visual_prompt: 'Ancient river temple at sunrise, armored guards, glowing tachyon artifact in the waters, cinematic lighting',
-          image_url: 'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80',
-          choices: [
-            {
-              id: 'c1',
-              choice_text: 'Present your signet and offer your services as a royal scholar to the Emperor.',
-              consequence_hint: 'Raises court influence (+15), but arouses suspicion among rival priests.',
-            },
-            {
-              id: 'c2',
-              choice_text: 'Activate your chrono-anchor to scan the artifact before the guards seize it.',
-              consequence_hint: 'Gathers crucial technical data, but drains temporal charge and alarms the commander.',
-            },
-            {
-              id: 'c3',
-              choice_text: 'Slip into the bamboo shadows and track the artifact to the vaults unseen.',
-              consequence_hint: 'Preserves stealth and opens an undercover infiltration branch.',
-            },
-          ],
-          created_at: new Date().toISOString(),
-        };
+        if (!loadedTimeline) {
+          loadedTimeline = {
+            current_era: json.story.era_id || 'ancient-india',
+            current_chapter: 1,
+            current_scene_number: 1,
+            character: 'Protagonist',
+            relationships: { 'Local Faction': 50, 'Imperial Authority': 50 },
+            flags: { initial_arrival: true },
+            resources: { temporal_charge: 90, influence: 60 },
+            story_summary: json.story.story_summary || json.story.tagline || 'Timeline strand initialization in progress.',
+            branch_id: 'main',
+            history: [],
+            ending_eligibility: ['hero_ending', 'paradox_ending'],
+          };
+        }
+        setTimelineState(loadedTimeline);
 
-        setCurrentScene(defaultScene);
+        // Fetch scene: if loadedScene has rich narration, use it; otherwise provide epic cinematic prologue
+        if (loadedScene && loadedScene.narration && loadedScene.narration.length > 100) {
+          setCurrentScene(loadedScene);
+        } else {
+          const richNarration = `The chronal rift stabilizes over the horizon of ${json.story.title}. A veil of morning incense and temporal static hangs thick in the air. Deep within the ancient stone sanctum, an ethereal resonance vibrates through the earth, signaling that history itself has diverged from its original path. Armed sentries hold their positions in stunned silence as the luminous brass relic begins to oscillate with dangerous power. You step forward into the dawn, knowing that your next decision will either anchor this reality or shatter the timeline forever.`;
+
+          const fallbackScene: StoryScene = {
+            id: loadedScene?.id || `scene-initial-${storyId}`,
+            story_id: storyId,
+            chapter_id: loadedScene?.chapter_id || 'chap-1',
+            scene_number: loadedScene?.scene_number || 1,
+            title: json.story.title || 'The Chronal Awakening',
+            narration: loadedScene?.narration && loadedScene.narration.length > 50 ? loadedScene.narration : richNarration,
+            dialogues: loadedScene?.dialogues && loadedScene.dialogues.length > 0 ? loadedScene.dialogues : [
+              { character: 'Vanguard Commander', text: 'Halt! That radiance is not of this earthly world. Are you a messenger of the gods, or an omen of ruin?' },
+              { character: 'Protagonist', text: 'Neither. I am a traveller of the timestream, and that machine is about to breach containment.' },
+            ],
+            scene_description: loadedScene?.scene_description || json.story.story_summary || 'An ancient terrace illuminated by torchlight and an oscillating tachyon vortex.',
+            visual_prompt: json.story.title,
+            image_url: loadedScene?.image_url || getEraCoverImage(`${json.story.era_id || ''} ${json.story.title || ''}`),
+            choices: loadedScene?.choices && loadedScene.choices.length > 0 ? loadedScene.choices : [
+              {
+                id: 'c1',
+                choice_text: 'Approach the commander openly and present your credentials as an imperial scholar.',
+                consequence_hint: 'Raises court influence (+15), draws political attention.',
+              },
+              {
+                id: 'c2',
+                choice_text: 'Deploy your chronal scanner to stabilize the radiating brass mechanism immediately.',
+                consequence_hint: 'Prevents spatial rupture, but depletes temporal reserve (-20%).',
+              },
+              {
+                id: 'c3',
+                choice_text: 'Mantle into the colonnade shadows to scout the temple vaults before reinforcements arrive.',
+                consequence_hint: 'Maintains stealth infiltration and uncovers secret passages.',
+              },
+            ],
+            created_at: new Date().toISOString(),
+          };
+
+          setCurrentScene(fallbackScene);
+        }
+        // Check for local auto-saved checkpoint
+        if (typeof window !== 'undefined') {
+          try {
+            const savedRaw = localStorage.getItem(`timeloop_checkpoint_${storyId}`);
+            if (savedRaw) {
+              const saved = JSON.parse(savedRaw);
+              if (saved.scene) {
+                setCurrentScene(saved.scene);
+                if (saved.timelineState) setTimelineState(saved.timelineState);
+                if (saved.savedAt) setLastAutoSaveTime(saved.savedAt);
+              }
+            }
+          } catch {}
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -100,6 +150,22 @@ export default function StoryPlayerPage() {
         const json = await res.json();
         setCurrentScene(json.nextScene);
         setTimelineState(json.updatedState);
+
+        // Auto-save checkpoint to local recovery storage
+        const nowStr = new Date().toLocaleTimeString();
+        setLastAutoSaveTime(nowStr);
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(
+              `timeloop_checkpoint_${storyId}`,
+              JSON.stringify({
+                scene: json.nextScene,
+                timelineState: json.updatedState,
+                savedAt: nowStr,
+              })
+            );
+          } catch {}
+        }
       } else {
         const err = await res.json();
         alert(`Failed to progress story: ${err.error || 'Server error'}`);
@@ -145,7 +211,21 @@ export default function StoryPlayerPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {lastAutoSaveTime && (
+            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-md bg-emerald-950/50 border border-emerald-500/30 px-2.5 py-1 text-[11px] font-mono text-emerald-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Auto-Saved: {lastAutoSaveTime}
+            </span>
+          )}
+
+          <Link
+            href="/virtual-world"
+            className="flex items-center gap-1.5 rounded-lg border border-cyan-400/50 bg-gradient-to-r from-purple-600 to-cyan-600 px-3 py-1.5 text-xs font-bold text-white shadow-glow-cyan hover:brightness-110 transition"
+          >
+            <span>🎮 3D World</span>
+          </Link>
+
           <Link
             href={`/timeline-map/${story.id}`}
             className="flex items-center gap-1.5 rounded-lg border border-purple-500/30 bg-purple-950/20 px-3 py-1.5 text-xs font-medium text-purple-300 hover:bg-purple-900/40 transition"

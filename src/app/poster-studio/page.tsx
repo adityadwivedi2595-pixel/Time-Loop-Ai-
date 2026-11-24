@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { PosterStudioCanvas } from '@/components/poster/PosterStudioCanvas';
 import { Badge } from '@/components/ui/Badge';
 import { Film, RefreshCw } from 'lucide-react';
+import { getEraCoverImage } from '@/lib/ai/image-provider';
 
 function PosterStudioContent() {
   const searchParams = useSearchParams();
@@ -16,7 +17,7 @@ function PosterStudioContent() {
   const characterName = searchParams.get('character') || 'Arjun Thorne';
   const artworkUrl =
     searchParams.get('artwork') ||
-    'https://images.unsplash.com/photo-1599661046827-dacff0c0f09a?auto=format&fit=crop&w=1200&q=80';
+    getEraCoverImage(`${eraName} ${title}`);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 space-y-8">

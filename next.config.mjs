@@ -12,6 +12,15 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@modelcontextprotocol/sdk'],
   },
+  async redirects() {
+    return [
+      {
+        source: '/heritage-360',
+        destination: '/heritage',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

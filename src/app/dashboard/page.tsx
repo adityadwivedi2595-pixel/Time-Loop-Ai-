@@ -13,6 +13,7 @@ import {
   Bookmark,
   Activity,
   ArrowRight,
+  Zap,
 } from 'lucide-react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/Badge';
@@ -66,18 +67,29 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick Launch Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        <Link href="/heritage">
+          <GlassCard interactive glow="cyan" className="space-y-2 border-amber-400/60 shadow-glow-cyan bg-gradient-to-br from-amber-950/40 via-black to-cyan-950/40">
+            <div className="flex items-center justify-between">
+              <Sparkles className="h-6 w-6 text-amber-300 animate-pulse" />
+              <Badge variant="cyan" className="text-[10px]">🇮🇳 47 SITES</Badge>
+            </div>
+            <h3 className="font-display text-sm font-black text-white">India Heritage Explorer</h3>
+            <p className="text-xs text-gray-300">Verified historical records, then-vs-now archives, and neural voice guides.</p>
+          </GlassCard>
+        </Link>
+
         <Link href="/eras">
-          <GlassCard interactive glow="cyan" className="space-y-2">
-            <Compass className="h-6 w-6 text-cyan-400" />
+          <GlassCard interactive glow="purple" className="space-y-2">
+            <Compass className="h-6 w-6 text-purple-400" />
             <h3 className="font-display text-sm font-bold text-white">Explore 8 Eras</h3>
             <p className="text-xs text-gray-400">Ancient India, Mughal Empire, Cyberpunk 2099, Space Civilization & more.</p>
           </GlassCard>
         </Link>
 
         <Link href="/character-studio">
-          <GlassCard interactive glow="purple" className="space-y-2">
-            <Users className="h-6 w-6 text-purple-400" />
+          <GlassCard interactive className="space-y-2">
+            <Users className="h-6 w-6 text-emerald-400" />
             <h3 className="font-display text-sm font-bold text-white">AI Character Studio</h3>
             <p className="text-xs text-gray-400">Build custom archetypes with psychological motivations & portraits.</p>
           </GlassCard>

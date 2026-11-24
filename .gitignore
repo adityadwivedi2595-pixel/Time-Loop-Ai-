@@ -29,3 +29,15 @@ yarn-error.log*
 # OS Files
 .DS_Store
 Thumbs.db
+
+# TypeScript Build Info
+*.tsbuildinfo
+
+# Internal Development & Scraper Scripts
+scripts/
+
+# Cache & Temporary Audio
+cache/
+public/audio-test.mp3
+public/test-*.mp3
+public/test_*.mp3

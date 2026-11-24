@@ -9,9 +9,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     if (!story) return NextResponse.json({ error: 'Story not found' }, { status: 404 });
 
     const timelineState = await DataStore.getTimelineState(params.id, 'main');
+    const currentScene = await DataStore.getLatestSceneByStory(params.id);
     return NextResponse.json({
       story_id: params.id,
       timelineState,
+      currentScene,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

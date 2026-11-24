@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { CharacterProfile, CharacterRole } from '@/types/character';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Badge } from '@/components/ui/Badge';
-import { Users, Sparkles, Plus, Trash2, ArrowRight, Shield, RefreshCw } from 'lucide-react';
+import { Users, Sparkles, Plus, Trash2, ArrowRight, Shield, RefreshCw, Mic, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 
 const AVAILABLE_ROLES: CharacterRole[] = [
@@ -103,6 +103,13 @@ export default function CharacterStudioPage() {
           >
             Saved Characters ({characters.length})
           </button>
+          <Link
+            href="/character-interaction"
+            className="flex items-center gap-1.5 rounded-lg px-4 py-2 border border-cyan-500/40 bg-cyan-950/40 text-cyan-300 font-bold hover:bg-cyan-900/60 transition"
+          >
+            <Mic className="h-3.5 w-3.5" />
+            <span>Voice Chat</span>
+          </Link>
         </div>
       </div>
 
@@ -234,14 +241,24 @@ export default function CharacterStudioPage() {
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-white/10 flex items-center justify-between">
-                <Link
-                  href={`/story-config?characterId=${char.id}`}
-                  className="flex items-center gap-1 text-xs font-semibold text-cyan-400 hover:underline"
-                >
-                  <span>Use in Odyssey</span>
-                  <ArrowRight className="h-3 w-3" />
-                </Link>
+              <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-3">
+                  <Link
+                    href={`/story-config?characterId=${char.id}`}
+                    className="flex items-center gap-1 text-xs font-semibold text-cyan-400 hover:underline"
+                  >
+                    <span>Use in Odyssey</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+
+                  <Link
+                    href="/character-interaction"
+                    className="flex items-center gap-1 text-xs font-semibold text-purple-400 hover:underline"
+                  >
+                    <Mic className="h-3 w-3" />
+                    <span>Voice Chat</span>
+                  </Link>
+                </div>
 
                 <button
                   onClick={() => handleDelete(char.id)}
